@@ -1,7 +1,7 @@
 # Microsoft Teams Browser Notifications
 Tampermonkey script in order to enable browser notifications for the Web-based Microsoft Teams chat. Useful in Linux (in Linux chat notifications do not work).
 
-Tested in Chrome 66.
+**Tested in Chrome 66 and Ubuntu 16.04.**
 
 ## Installation
 
