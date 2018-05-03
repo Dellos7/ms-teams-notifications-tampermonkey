@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Teams Notifications
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  Creates browser notifications for the Web-based Teams application. Useful in Linux (in Linux notifications do not work). Tested in Chrome 66.
 // @author       David López Castellote
 // @match        https://teams.microsoft.com/*
@@ -87,7 +87,7 @@
             if( document.hidden ) {
                 document.querySelector('ul[data-tid="active-chat-list"] li:nth-last-child(2) a').click();
             }
-        }, 60000 );
+        }, 30000 );
     }
 
     setTitleObserver();
