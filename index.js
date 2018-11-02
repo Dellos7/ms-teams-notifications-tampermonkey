@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Teams Notifications
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  Creates browser notifications for the Web-based Teams application. Useful in Linux (in Linux notifications do not work). Tested in Chrome 66.
 // @author       David López Castellote
 // @match        https://teams.microsoft.com/*
@@ -9,11 +9,49 @@
 // ==/UserScript==
 (function() {
     'use strict';
+    const TRANSLATIONS = {
+        "es": {
+            "BROWSER_NOT_SUPPORTED":    "Este navegador no soporta notificaciones de escritorio.",
+            "ACTIVATE_NOTIFICATIONS":   "Activando notificaciones de Teams...",
+            "MULTI_NEW_MESSAGES":       "Tienes %numberOfMessages% nuevas notificaciones.",
+            "SINGLE_NEW_MESSAGE":       "Tienes %numberOfMessages% nuevas notificación.",
+            "PERMISSION_RESULT":        "Permiso para notificaciones de Teams: %result%"
+        },
+        "de": {
+            "BROWSER_NOT_SUPPORTED":    "Dieser Browser unterstützt keine Desktopbenachrichtigungen.",
+            "ACTIVATE_NOTIFICATIONS":   "Teambenachrichtigungen aktivieren...",
+            "MULTI_NEW_MESSAGES":       "%numberOfMessages% neue Nachrichten.",
+            "SINGLE_NEW_MESSAGE":       "%numberOfMessages% neue Nachricht.",
+            "PERMISSION_RESULT":        "Erlaubnis für Teambenachrichtigungen: %result%"
+        },
+        "en": {
+            "BROWSER_NOT_SUPPORTED":    "This browser does not support desktop notifications.",
+            "ACTIVATE_NOTIFICATIONS":   "Activating Teams notifications...",
+            "MULTI_NEW_MESSAGES":       "%numberOfMessages% new messages.",
+            "SINGLE_NEW_MESSAGE":       "%numberOfMessages% new message.",
+            "PERMISSION_RESULT":        "Permission for Teams notifications: %result%"
+        }
+    };
+    const LANG_MAPPING = {
+        "es-*": "es",
+        "en-*": "en",
+        "de-*": "de"
+    };
+    function getTranslation(key) {
+        let lang;
+        if(TRANSLATIONS.hasOwnProperty(navigator.language)) {
+            lang = navigator.language;
+        }
+        else {
+            lang = LANG_MAPPING[Object.keys(LANG_MAPPING).filter(mappingkey => navigator.language.match(mappingkey) !== null)[0]] || "en";
+        }
+        return TRANSLATIONS[lang][key] || key;
+    }
 
     function notifyMe(numberOfMessages) {
         // Let's check if the browser supports notifications
         if (!("Notification" in window)) {
-            alert("Este navegador no soporta notificaciones de escritorio.");
+            alert(getTranslation("BROWSER_NOT_SUPPORTED"));
         }
 
         // Let's check whether notification permissions have already been granted
@@ -35,13 +73,13 @@
     }
 
     function createNotification(numberOfMessages) {
-        var title = "Teams Online";
-        var options = {
-            body: "Tienes " + numberOfMessages + " nuevas notificaciones.",
+        const title = "Microsoft Teams Online";
+        const options = {
+            body: getTranslation((numberOfMessages == 1) ? "SINGLE_NEW_MESSAGE" : "MULTI_NEW_MESSAGES").replace("%numberOfMessages%", numberOfMessages),
             icon: document.querySelector('link[rel="icon"]').href,
             requireInteraction: true
         };
-        var notification = new Notification(title, options);
+        const notification = new Notification(title, options);
         notification.onclick = function() {
             window.focus();
         };
@@ -49,13 +87,13 @@
 
 
     function setTitleObserver() {
-        console.log('Activando notificaciones de Teams...');
+        console.log(getTranslation("ACTIVATE_NOTIFICATIONS"));
         requestNotificationsPermission();
-        var target = document.querySelector('head > title');
-        var observer = new window.WebKitMutationObserver(function(mutations) {
+        const target = document.querySelector('head > title');
+        const observer = new window.WebKitMutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
-                var newTitle = mutation.target.textContent;
-                var res;
+                const newTitle = mutation.target.textContent;
+                let res;
                 try {
                     res = newTitle.match(/(?<=\().+?(?=\))/);
                 }
@@ -78,7 +116,7 @@
 
     function requestNotificationsPermission() {
         Notification.requestPermission().then(function(result) {
-            console.log('Permiso para notificaciones de Teams: ' + result);
+            console.log(getTranslation("PERMISSION_RESULT").replace("%result%", result));
         });
     }
 
